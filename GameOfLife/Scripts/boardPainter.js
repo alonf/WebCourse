@@ -15,7 +15,7 @@ GameOfLife.BoardPainter = class BoardPainter {
         ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
         
         ctx.lineWidth = 1;
-        ctx.strokeStyle = "rgba(255, 0 ,0, 1)";
+        ctx.strokeStyle = "rgba(255, 160 ,160, 1)";
         ctx.beginPath();
 
         for (let y = 0; y <= this._canvas.height; y += this._cellHeight + 1)
