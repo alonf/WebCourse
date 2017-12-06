@@ -1,6 +1,5 @@
 "use strict";
 
-
 var GameOfLife = GameOfLife || {}
 
 const cellState = {
@@ -29,6 +28,10 @@ GameOfLife.Cell = class Cell {
     switchGenerations() {
         this._state = this._nextGenerationState
     }
+
+    get state() {
+        return this._state;
+    }
 }
 
 GameOfLife.Board = class Board {
@@ -47,6 +50,10 @@ GameOfLife.Board = class Board {
                 action(x,y);
             }
         }
+    }
+
+    getCellState(x, y) {
+        return (this._cells[x][y]).state;
     }
 
     neighboursVisitor(x, y, action) {
@@ -75,32 +82,6 @@ GameOfLife.Board = class Board {
         this.boardVisitor((x,y) => this._cells[x][y].calcNextGenerationState());
         this.boardVisitor((x,y) => this._cells[x][y].switchGenerations());
     }
-
-
-    debugDumpBoard()  {
-        function DebugShape(cell) {
-            switch(cell._state) {
-                case cellState.NotActive:
-                    return 'O';
-    
-                case cellState.Live:
-                    return 'X';
-                
-                case cellState.Dead:
-                    return ' ';
-            }
-            return ' ';
-        };
-
-        for (let y = 0; y < this._sizeY; ++y) {
-            let line = "";
-            for (let x = 0; x < this._sizeX; ++x) {
-               line += DebugShape(this._cells[x][y]);
-            }
-            console.log(line);
-        }
-        console.log();
-    }
 }
 
 let _boardFactoryinstance = null;
@@ -115,7 +96,7 @@ GameOfLife.BoardFactory = class BoardFactory {
         return _boardFactoryinstance;
       }
 
-      defaultRules(state, nLiveCells) {
+      static defaultRules(state, nLiveCells) {
         let result = state === cellState.NotActive ? cellState.NotActive : //Not active state stays no active
          state === cellState.Live && (nLiveCells < 2 || nLiveCells > 3) ? cellState.Dead :  //Any live cell with fewer than two live neighbours dies, Any live cell with more than three live neighbours dies
          state === cellState.Dead && nLiveCells === 3 ? cellState.Live : //Any dead cell with exactly three live neighbours becomes a live cell
@@ -124,30 +105,31 @@ GameOfLife.BoardFactory = class BoardFactory {
          return result;
       }
 
-      createDiamondBoard(sizeX, sizeY) {
-        let board = new GameOfLife.Board(sizeX, sizeY);
-        board.initiate((x,y) => new GameOfLife.Cell(this.defaultRules, ( y < size/2 && ( x < (size/2 - 1 - y) || x > (size/2 + y) ) || 
-                                                                       ( y > size/2 && ( x < (y - size/2) || x > (size/2 + (size - y) - 1)))) ? cellState.NotActive : Math.random() > 0.5 ? cellState.Live : cellState.Dead));
+      createDiamondBoard(sizeX, sizeY, seedFactor) {
+        let size = sizeX; //in the case of diamond we take only one value
+        let board = new GameOfLife.Board(size, size);
+        board.initiate((x,y) => new GameOfLife.Cell(GameOfLife.BoardFactory.defaultRules, ( y < size/2 && ( x < (size/2 - 1 - y) || x > (size/2 + y) ) || 
+                                                                       ( y > size/2 && ( x < (y - size/2) || x > (size/2 + (size - y) - 1)))) ? cellState.NotActive : Math.random() < seedFactor ? cellState.Live : cellState.Dead));
         return board;
       }
 
-      createRectangularBoard(sizeX, sizeY) {
+      createRectangularBoard(sizeX, sizeY, seedFactor) {
         let board = new GameOfLife.Board(sizeX, sizeY);
-        board.initiate((x,y) =>  new GameOfLife.Cell(this.defaultRules, Math.random() > 0.5 ? cellState.Live : cellState.Dead));
+        board.initiate((x,y) =>  new GameOfLife.Cell(GameOfLife.BoardFactory.defaultRules, Math.random() < seedFactor ? cellState.Live : cellState.Dead));
         return board;
       }
 
-      createCrossBoard(sizeX, sizeY) {
+      createCrossBoard(sizeX, sizeY, seedFactor) {
         let board = new GameOfLife.Board(sizeX, sizeY);
-        board.initiate((x,y) =>  new GameOfLife.Cell(this.defaultRules, (x < 3 || x > sizeX - 3) && (y < 3 || y > sizeY - 3) ? cellState.NotActive : Math.random() > 0.5 ? cellState.Live : cellState.Dead));
+        board.initiate((x,y) =>  new GameOfLife.Cell(GameOfLife.BoardFactory.defaultRules, (x < 3 || x > sizeX - 3) && (y < 3 || y > sizeY - 3) ? cellState.NotActive : Math.random() < seedFactor ? cellState.Live : cellState.Dead));
         return board;
       }
 
       getBoardBuilders() {
           return [
-                    {"Name" : "Rectengular", "Factory" : this.createRectangularBoard},
-                    {"Name" : "Diamond", "Factory" : this.createDiamondBoard},
-                    {"Name" : "Cross", "Factory" : this.createDiamondBoard}
+                    {"name" : "Rectengular", "factory" : this.createRectangularBoard},
+                    {"name" : "Diamond", "factory" : this.createDiamondBoard},
+                    {"name" : "Cross", "factory" : this.createCrossBoard}
           ];
         }  
 }
