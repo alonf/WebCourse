@@ -13,6 +13,7 @@ const updateFrequencyFactors = [{"name":"Stop", "delay":860000, "isDefault":fals
                                 {"name":"Slow", "delay":1000, "isDefault":false}, {"name":"Normal", "delay":500, "isDefault":true},
                                 {"name":"Fast", "delay":200, "isDefault":false},  {"name":"Very Fast", "delay":0, "isDefault":false}];
 
+const wallAliveOptions = [{"text":"Not Active", "value":false}, {"text":"Alive", "value":true}];
 
 var GameOfLife = GameOfLife || {}
 
@@ -80,6 +81,15 @@ GameOfLife.Controller = class Controller {
         $('#boardPolicy').append(boardPolicyOptions);
     }
 
+    populateWallAliveSelection() {
+        let options = "";
+        
+        wallAliveOptions.map((wallAlive) => {
+            options += `<option value="${wallAlive.value}">${wallAlive.text}</option>`
+        });
+        $('#wallsAlive').append(options);
+    }
+
     bindStartButton() {
         $("#startButton").click(()=>{this.restartGame();});
     }
@@ -116,11 +126,13 @@ GameOfLife.Controller = class Controller {
 
         let seedFactor = parseFloat($('#seedFactor').val());
         let delay = parseInt($('#updateFrequencyFactor').val());
-        
+        let isNotActiveCellAlive = $('#wallsAlive').val() == 'true';
 
         this._boardSize = parseInt($('#boardSize').val());
-        this._board = factoryEntry.factory(this._boardSize, this._boardSize, seedFactor, policy);
+        this._board = factoryEntry.factory(this._boardSize, this._boardSize, seedFactor, policy, isNotActiveCellAlive);
         this._board.delay = delay;
+
+        
 
         let canvas = $('#gameBoard').get(0);
         this._boardPainter = new GameOfLife.BoardPainter(this._boardSize, this._boardSize, canvas);
@@ -147,6 +159,7 @@ GameOfLife.Controller = class Controller {
         this.populateBoardSeedSelection();
         this.populateUpdateFrequencyFactorSelection();
         this.populateBoardPolicySelection();
+        this.populateWallAliveSelection();
         this.bindStartButton();
     }
 

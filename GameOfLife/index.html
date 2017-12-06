@@ -23,70 +23,67 @@
     <div class="border border-primary">
       <div class="row m-2">
         <div class="col">
-          <div class="row">
-            <label class="align-self-center">Shape:</label>
-            <select class="custom-select m-2" id="boardShape">
-            </select>
-          </div>
+          <label class="align-self-center">Shape:</label>
+          <select class="custom-select m-2" id="boardShape">
+          </select>
         </div>
         <div class="col">
-          <div class="row">
-            <label class="ml-4 align-self-center">Size:</label>
-            <select class="custom-select m-2" id="boardSize">
-            </select>
-          </div>
+          <label class="ml-4 align-self-center">Size:</label>
+          <select class="custom-select m-2" id="boardSize">
+          </select>
         </div>
         <div class="col">
-          <div class="row">
-            <label class="ml-4 align-self-center">Seed:</label>
-            <select class="custom-select m-2" id="seedFactor">
-            </select>
-          </div>
+          <label class="ml-4 align-self-center">Seed:</label>
+          <select class="custom-select m-2" id="seedFactor">
+          </select>
+        </div>
+      </div>
+      <div class="row my-2">
+        <div class="col">
+          <label class="ml-4 align-self-center">Policy:</label>
+          <select class="custom-select m-2" id="boardPolicy">
+          </select>
         </div>
         <div class="col">
-            <div class="row">
-              <label class="ml-4 align-self-center">Policy:</label>
-              <select class="custom-select m-2" id="boardPolicy">
-              </select>
-            </div>
-          </div>
-        <div class="col">
-            <div class="row">
-              <label class="ml-4 align-self-center">Speed:</label>
-              <select class="custom-select m-2" id="updateFrequencyFactor">
-              </select>
-            </div>
-          </div>
-        <div class="col">
-          <button class="btn btn-primary m-2" id="startButton">Start</button>
+          <label class="ml-4 align-self-center">Speed:</label>
+          <select class="custom-select m-2" id="updateFrequencyFactor">
+          </select>
         </div>
+        <div class="col">
+          <label class="ml-4 align-self-center">Walls:</label>
+          <select class="custom-select m-2" id="wallsAlive">
+          </select>
+        </div>
+      </div>
+      <div class="row m-2"></div>
+      <div class="col">
+        <button class="btn btn-primary btn-block m-2" id="startButton">Start</button>
       </div>
     </div>
   </div>
   <div class="container">
-    <div class="mx-auto"  style="width: 600px;">
-     
-          <canvas id="gameBoard" class="mt-4" width="600" height="600">
-     
-      </div>
+    <div class="mx-auto" style="width: 600px;">
+      <canvas id="gameBoard" class="mt-4" width="600" height="600">
     </div>
   </div>
+  </div>
 
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-      crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
-      crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
-      crossorigin="anonymous"></script>
-    <script src="scripts/gameoflife.js"></script>
-    <script src="scripts/boardPainter.js"></script>
-    <script src="scripts/controller.js"></script>
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+    crossorigin="anonymous"></script>
+  <script src="scripts/gameoflife.js"></script>
+  <script src="scripts/boardPainter.js"></script>
+  <script src="scripts/policy.js"></script>
+  <script src="scripts/controller.js"></script>
 
-    <script>
-      let controller = new GameOfLife.Controller();
-      controller.initControls();
-    </script>
+  <script>
+    let controller = new GameOfLife.Controller();
+    controller.initControls();
+  </script>
 </body>
 
 </html>

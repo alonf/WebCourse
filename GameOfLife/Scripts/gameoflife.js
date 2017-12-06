@@ -16,6 +16,7 @@ GameOfLife.Cell = class Cell {
         this._state = initialState;
         this._nextGenerationState = initialState;
         this._delay = 500; //default delay
+        this._isNotActiveCellAlive = false;
     }
 
     addAneighbour(neighbour) {
@@ -23,8 +24,10 @@ GameOfLife.Cell = class Cell {
     }
 
     calcNextGenerationState() {
-        this._nextGenerationState = this._policy(this._state, this._neighbours.filter(n=>n._state === cellState.Live).length);
+        this._nextGenerationState = this._policy(this._state, this._neighbours.filter(n=> this._isNotActiveCellAlive ? n._state != cellState.Dead : n._state === cellState.Live).length);
     }
+
+
 
     switchGenerations() {
         this._state = this._nextGenerationState
@@ -47,12 +50,20 @@ GameOfLife.Cell = class Cell {
     get delay() {
         return this._delay;
     }
+
+    set isNotActiveCellAlive(val) {
+        this._isNotActiveCellAlive = val;
+    }
+    get isNotActiveCellAlive() {
+        return this._isNotActiveCellAlive;
+    }
 }
 
 GameOfLife.Board = class Board {
-    constructor(sizeX, sizeY)    {
+    constructor(sizeX, sizeY, isNotActiveCellAlive)    {
         this._sizeX = sizeX;
         this._sizeY = sizeY;
+        this._isNotActiveCellAlive = isNotActiveCellAlive;
         this._cells = new Array(sizeX);
 
         for (let y = 0; y < sizeY; ++y)
@@ -90,7 +101,8 @@ GameOfLife.Board = class Board {
 
     initiate(cellFactory) {
             this.boardVisitor((x,y)=> { 
-            this._cells[x][y] = cellFactory(x, y);;
+            this._cells[x][y] = cellFactory(x, y);
+            this._cells[x][y].isNotActiveCellAlive = this._isNotActiveCellAlive;
         });
 
         //update neigbours arrays
@@ -121,69 +133,41 @@ GameOfLife.BoardFactory = class BoardFactory {
         return _boardFactoryinstance;
       }
 
-      static defaultRules(state, nLiveCells) {
-        let result = state === cellState.NotActive ? cellState.NotActive : //Not active state stays no active
-         state === cellState.Live && (nLiveCells < 2 || nLiveCells > 3) ? cellState.Dead :  //Any live cell with fewer than two live neighbours dies, Any live cell with more than three live neighbours dies
-         state === cellState.Dead && nLiveCells === 3 ? cellState.Live : //Any dead cell with exactly three live neighbours becomes a live cell
-         state; //Any live cell with two or three live neighbours lives, Any dead cell with non three live neighbours stays dead
-
-         return result;
-      }
-
-      static fertile(state, nLiveCells) {
-        let result = state === cellState.NotActive ? cellState.NotActive : //Not active state stays no active
-         state === cellState.Live && (nLiveCells < 2 || nLiveCells > 5) ? cellState.Dead :  //Any live cell with fewer than two live neighbours dies, Any live cell with more than three live neighbours dies
-         state === cellState.Dead && nLiveCells === 4 ? cellState.Live : //Any dead cell with exactly three live neighbours becomes a live cell
-         state; //Any live cell with two or three live neighbours lives, Any dead cell with non three live neighbours stays dead
-
-         return result;
-      }
-
-      static highLife(state, nLiveCells) { //http://kaytdek.trevorshp.com/projects/computer/neuralNetworks/gameOfLife2.htm
-        let result = state === cellState.NotActive ? cellState.NotActive : //Not active state stays no active
-         state === cellState.Live && (nLiveCells < 2 || nLiveCells > 3) ? cellState.Dead :  //Any live cell with fewer than two live neighbours dies, Any live cell with more than three live neighbours dies
-         state === cellState.Dead && (nLiveCells === 6) ? cellState.Live : //Any dead cell with exactly three live neighbours becomes a live cell
-         state; //Any live cell with two or three live neighbours lives, Any dead cell with non three live neighbours stays dead
-
-         return result;
-      }
-      
-
-      createDiamondBoard(sizeX, sizeY, seedFactor, policy) {
+      createDiamondBoard(sizeX, sizeY, seedFactor, policy, isActiveCellAlive) {
         let size = sizeX; //in the case of diamond we take only one value
-        let board = new GameOfLife.Board(size, size);
-        board.initiate((x,y) => new GameOfLife.Cell(GameOfLife.BoardFactory.defaultRules, ( y < size/2 && ( x < (size/2 - 1 - y) || x > (size/2 + y) ) || 
+        let board = new GameOfLife.Board(size, size, isActiveCellAlive);
+        board.initiate((x,y) => new GameOfLife.Cell(policy, ( y < size/2 && ( x < (size/2 - 1 - y) || x > (size/2 + y) ) || 
                                                                        ( y > size/2 && ( x < (y - size/2) || x > (size/2 + (size - y) - 1)))) ? cellState.NotActive : Math.random() < seedFactor ? cellState.Live : cellState.Dead));
         return board;
       }
 
-      createRectangularBoard(sizeX, sizeY, seedFactor, policy) {
-        let board = new GameOfLife.Board(sizeX, sizeY);
+      createRectangularBoard(sizeX, sizeY, seedFactor, policy, isActiveCellAlive) {
+        let board = new GameOfLife.Board(sizeX, sizeY, isActiveCellAlive);
         board.initiate((x,y) =>  new GameOfLife.Cell(policy, Math.random() < seedFactor ? cellState.Live : cellState.Dead));
         return board;
       }
 
-      createCrossBoard(sizeX, sizeY, seedFactor, policy) {
+      createCrossBoard(sizeX, sizeY, seedFactor, policy, isActiveCellAlive) {
         let crossSizeX = sizeX / 3;
         let crossSizeY = sizeY / 3;
-        let board = new GameOfLife.Board(sizeX, sizeY);
+        let board = new GameOfLife.Board(sizeX, sizeY, isActiveCellAlive);
         board.initiate((x,y) =>  new GameOfLife.Cell(policy, (x < crossSizeX || x > sizeX - crossSizeX - 1) && (y < crossSizeY || y > sizeY - crossSizeY - 1) ? cellState.NotActive : Math.random() < seedFactor ? cellState.Live : cellState.Dead));
         return board;
       }
 
-      createCircularBoard(sizeX, sizeY, seedFactor, policy) {
+      createCircularBoard(sizeX, sizeY, seedFactor, policy, isActiveCellAlive) {
         let radius = sizeX / 2.0; //in the case of a circle we take only one value
         let center = radius - 0.5;
-        let board = new GameOfLife.Board(sizeX, sizeY);
+        let board = new GameOfLife.Board(sizeX, sizeY, isActiveCellAlive);
         board.initiate((x,y) =>  new GameOfLife.Cell(policy, (Math.pow(x - center, 2) + Math.pow(y - center, 2) > Math.pow(radius, 2)) ? cellState.NotActive : Math.random() < seedFactor ? cellState.Live : cellState.Dead));
         return board;
       }
 
-      createRingBoard(sizeX, sizeY, seedFactor, policy) {
+      createRingBoard(sizeX, sizeY, seedFactor, policy, isActiveCellAlive) {
         let outerRadius = sizeX / 2.0; //in the case of a circle we take only one value
         let center = outerRadius - 0.5;
         let innerRadius = sizeX / 3.0;
-        let board = new GameOfLife.Board(sizeX, sizeY);
+        let board = new GameOfLife.Board(sizeX, sizeY, isActiveCellAlive);
         board.initiate((x,y) =>  new GameOfLife.Cell(policy, 
             (Math.pow(x - center, 2) + Math.pow(y - center, 2) > Math.pow(outerRadius, 2)) ||
             (Math.pow(x - center, 2) + Math.pow(y - center, 2) < Math.pow(innerRadius, 2))
@@ -203,9 +187,9 @@ GameOfLife.BoardFactory = class BoardFactory {
 
         getBoardPolicies() {
             return [
-                {"name" : "Conway", "policy" : GameOfLife.BoardFactory.defaultRules},
-                {"name" : "Fertile ", "policy" : GameOfLife.BoardFactory.fertile},
-                {"name" : "High Life", "policy" : GameOfLife.BoardFactory.highLife}
+                {"name" : "Conway", "policy" : GameOfLife.BoardPolicies.defaultRules},
+                {"name" : "Fertile ", "policy" : GameOfLife.BoardPolicies.fertile},
+                {"name" : "High Life", "policy" : GameOfLife.BoardPolicies.highLife}
       ];
         }
 }
