@@ -15,7 +15,6 @@ GameOfLife.Cell = class Cell {
         this._policy = policy;
         this._state = initialState;
         this._nextGenerationState = initialState;
-        this._delay = 500; //default delay
         this._isNotActiveCellAlive = false;
     }
 
@@ -44,13 +43,6 @@ GameOfLife.Cell = class Cell {
         }
     }
 
-    set delay(val) {
-        this._delay = val;
-    }
-    get delay() {
-        return this._delay;
-    }
-
     set isNotActiveCellAlive(val) {
         this._isNotActiveCellAlive = val;
     }
@@ -65,6 +57,7 @@ GameOfLife.Board = class Board {
         this._sizeY = sizeY;
         this._isNotActiveCellAlive = isNotActiveCellAlive;
         this._cells = new Array(sizeX);
+        this._delay = 500; //default delay
 
         for (let y = 0; y < sizeY; ++y)
             this._cells[y] = new Array(sizeX);
@@ -99,6 +92,13 @@ GameOfLife.Board = class Board {
         }
     }
 
+    set delay(val) {
+        this._delay = val;
+    }
+    get delay() {
+        return this._delay;
+    }
+
     initiate(cellFactory) {
             this.boardVisitor((x,y)=> { 
             this._cells[x][y] = cellFactory(x, y);
@@ -119,77 +119,4 @@ GameOfLife.Board = class Board {
         this.boardVisitor((x,y) => this._cells[x][y].calcNextGenerationState());
         this.boardVisitor((x,y) => this._cells[x][y].switchGenerations());
     }
-}
-
-let _boardFactoryinstance = null;
-
-GameOfLife.BoardFactory = class BoardFactory {
-
-    constructor() {
-        if(!_boardFactoryinstance){
-            _boardFactoryinstance = this;
-        }
-
-        return _boardFactoryinstance;
-      }
-
-      createDiamondBoard(sizeX, sizeY, seedFactor, policy, isActiveCellAlive) {
-        let size = sizeX; //in the case of diamond we take only one value
-        let board = new GameOfLife.Board(size, size, isActiveCellAlive);
-        board.initiate((x,y) => new GameOfLife.Cell(policy, ( y < size/2 && ( x < (size/2 - 1 - y) || x > (size/2 + y) ) || 
-                                                                       ( y > size/2 && ( x < (y - size/2) || x > (size/2 + (size - y) - 1)))) ? cellState.NotActive : Math.random() < seedFactor ? cellState.Live : cellState.Dead));
-        return board;
-      }
-
-      createRectangularBoard(sizeX, sizeY, seedFactor, policy, isActiveCellAlive) {
-        let board = new GameOfLife.Board(sizeX, sizeY, isActiveCellAlive);
-        board.initiate((x,y) =>  new GameOfLife.Cell(policy, Math.random() < seedFactor ? cellState.Live : cellState.Dead));
-        return board;
-      }
-
-      createCrossBoard(sizeX, sizeY, seedFactor, policy, isActiveCellAlive) {
-        let crossSizeX = sizeX / 3;
-        let crossSizeY = sizeY / 3;
-        let board = new GameOfLife.Board(sizeX, sizeY, isActiveCellAlive);
-        board.initiate((x,y) =>  new GameOfLife.Cell(policy, (x < crossSizeX || x > sizeX - crossSizeX - 1) && (y < crossSizeY || y > sizeY - crossSizeY - 1) ? cellState.NotActive : Math.random() < seedFactor ? cellState.Live : cellState.Dead));
-        return board;
-      }
-
-      createCircularBoard(sizeX, sizeY, seedFactor, policy, isActiveCellAlive) {
-        let radius = sizeX / 2.0; //in the case of a circle we take only one value
-        let center = radius - 0.5;
-        let board = new GameOfLife.Board(sizeX, sizeY, isActiveCellAlive);
-        board.initiate((x,y) =>  new GameOfLife.Cell(policy, (Math.pow(x - center, 2) + Math.pow(y - center, 2) > Math.pow(radius, 2)) ? cellState.NotActive : Math.random() < seedFactor ? cellState.Live : cellState.Dead));
-        return board;
-      }
-
-      createRingBoard(sizeX, sizeY, seedFactor, policy, isActiveCellAlive) {
-        let outerRadius = sizeX / 2.0; //in the case of a circle we take only one value
-        let center = outerRadius - 0.5;
-        let innerRadius = sizeX / 3.0;
-        let board = new GameOfLife.Board(sizeX, sizeY, isActiveCellAlive);
-        board.initiate((x,y) =>  new GameOfLife.Cell(policy, 
-            (Math.pow(x - center, 2) + Math.pow(y - center, 2) > Math.pow(outerRadius, 2)) ||
-            (Math.pow(x - center, 2) + Math.pow(y - center, 2) < Math.pow(innerRadius, 2))
-             ? cellState.NotActive : Math.random() < seedFactor ? cellState.Live : cellState.Dead));
-        return board;
-      }
-
-      getBoardBuilders() {
-          return [
-                    {"name" : "Rectengular", "factory" : this.createRectangularBoard},
-                    {"name" : "Diamond", "factory" : this.createDiamondBoard},
-                    {"name" : "Cross", "factory" : this.createCrossBoard},
-                    {"name" : "Circular", "factory" : this.createCircularBoard},
-                    {"name" : "Ring", "factory" : this.createRingBoard}
-          ];
-        }  
-
-        getBoardPolicies() {
-            return [
-                {"name" : "Conway", "policy" : GameOfLife.BoardPolicies.defaultRules},
-                {"name" : "Fertile ", "policy" : GameOfLife.BoardPolicies.fertile},
-                {"name" : "High Life", "policy" : GameOfLife.BoardPolicies.highLife}
-      ];
-        }
 }

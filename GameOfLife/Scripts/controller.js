@@ -67,8 +67,10 @@ GameOfLife.Controller = class Controller {
         });
         $('#updateFrequencyFactor').append(updateFrequencyFactor);
         $('#updateFrequencyFactor').on('change', ()=> {
-            this._board && (this._board.delay = parseInt($('#updateFrequencyFactor').val()));
-            this.setBoardTimer();
+            if (this._board) {
+                this._board.delay = parseInt($('#updateFrequencyFactor').val());
+                this.setBoardTimer();
+            }
         });
     }
 
