@@ -1,6 +1,5 @@
 "use strict";
 
-
 let _boardFactoryinstance = null;
 
 GameOfLife.BoardFactory = class BoardFactory {

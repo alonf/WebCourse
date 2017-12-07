@@ -1,6 +1,5 @@
 "use strict";
 
-
 GameOfLife.BoardPainter = class BoardPainter {
     constructor(sizeX, sizeY, canvas) {
         this._sizeX = sizeX;
